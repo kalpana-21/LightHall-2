@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Challenge 1</title>
+  <style>
+    
+    body {
+      font-family: Arial, sans-serif;
+    }
+  
+    h2 {
+      color: #333;
+    }
+  
+    form {
+      margin-bottom: 20px;
+    }
+  
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+  
+    input[type="text"] {
+      width: 200px;
+      padding: 5px;
+    }
+  
+    input[type="submit"] {
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  
+    #myData {
+      margin-top: 20px;
+    }
+  
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+  
+    th, td {
+      padding: 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+  
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
+    }
+  </style>
+  <script>
+    function validateForm() {
+      var latitude = document.forms["locationForm"]["latitude"].value;
+      var longitude = document.forms["locationForm"]["longitude"].value;
+      var radius = document.forms["locationForm"]["radius"].value;
+
+      // Check if latitude, longitude, and radius are valid
+      if (isNaN(latitude) || isNaN(longitude) || isNaN(radius)) {
+        alert("Latitude, longitude, and radius must be numeric values.");
+        return false;
+      }
+      
+      var url = `https://data.sfgov.org/resource/rqzj-sfat.json?$where=within_circle(location,${latitude},${longitude},${radius})`;
+      
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          appendData(data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          var mainContainer = document.getElementById("myData");
+          mainContainer.innerHTML = "Failed to fetch";
+        });
+
+      return false; // Prevent form submission
+    }
+
+
+    function appendData(data) {
+    var table = document.createElement("table");
+    table.setAttribute("border", "1");
+
+    var thead = document.createElement("thead");
+    var tr = document.createElement("tr");
+  
+    // Create table header cells
+    var headers = ["S.No", "Location", "Type"];
+    for (var i = 0; i < headers.length; i++) {
+        var th = document.createElement("th");
+        th.textContent = headers[i];
+        tr.appendChild(th);
+    }
+    thead.appendChild(tr);
+    table.appendChild(thead);
+
+    var tbody = document.createElement("tbody");
+  
+    // Create table rows with data
+    for (var i = 0; i < data.length; i++) {
+        var row = document.createElement("tr");
+    
+        // Create table cells
+        var snoCell = document.createElement("td");
+        snoCell.textContent = i + 1;
+        row.appendChild(snoCell);
+    
+        var locationCell = document.createElement("td");
+        locationCell.textContent = data[i].locationdescription;
+        row.appendChild(locationCell);
+    
+        var typeCell = document.createElement("td");
+        typeCell.textContent = data[i].facilitytype;
+        row.appendChild(typeCell);
+    
+        tbody.appendChild(row);
+    }
+    table.appendChild(tbody);
+
+    var mainContainer = document.getElementById("myData");
+     mainContainer.innerHTML = ""; // Clear previous data
+    mainContainer.appendChild(table);
+}
+
+  </script>
+</head>
+<body>
+    <div class="container">
+     <h2>Enter Location Coordinates to find the food trucks nearby!</h2>
+     <form name="locationForm" onsubmit="return validateForm()">
+        <label for="latitude">Latitude:</label>
+        <input type="text" id="latitude" name="latitude" required>
+        <br><br>
+        <label for="longitude">Longitude:</label>
+        <input type="text" id="longitude" name="longitude" required>
+        <br><br>
+        <label for="radius">Radius:</label>
+        <input type="text" id="radius" name="radius" required>
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+    </div>
+    <div id="myData"></div>
+</body>
+</html>
